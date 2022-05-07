@@ -47,14 +47,13 @@ contract EngagementDAO {
             require(symbols[i] != _symbol, "USED_SYMBOL");
         }
 
+        // Create token and community-level protocol
         Token _token = new Token(token_name, token_symbol);
-
         Engagement _dao = new Engagement(_token, mana);
 
+        // Create DAO Profile 
         DAO_Profile memory profile;
-
         profile.token = _token;
-
         dao[serverID] = profile;
 
         emit DAOCreated(serverID, address(_token), token_symbol);
