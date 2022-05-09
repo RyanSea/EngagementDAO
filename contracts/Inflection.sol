@@ -6,14 +6,14 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {Token} from "./Token.sol";
 import {Engagement} from "./Engagement.sol";
 
-/// @title EngagementDAO
-/// @notice Factory for the engagement protocol and hub for meta-functionality 
+/// @title InflectionDAO
+/// @notice Creates and controls Engagement Spheres
 /// TODO Add auth (Gnosis Safe)
 /// TODO Add Uniswap integration + ?? (earn from treasury)
-contract EngagementDAO {
+contract Inflection {
 
     /*///////////////////////////////////////////////////////////////
-                                CONSTRUCTOR
+                                CONSTRUCT
     //////////////////////////////////////////////////////////////*/
 
     ERC20 immutable public mana;
@@ -24,21 +24,23 @@ contract EngagementDAO {
     }
 
     /*///////////////////////////////////////////////////////////////
-                                FACTORY
+                                CREATE
     //////////////////////////////////////////////////////////////*/
 
-    event DAOCreated(
+    event SphereCreated(
         uint indexed serverID,
         address indexed token, 
+        address indexed _sphere,
         string token_symbol
     );
 
     /// @notice Creates community level protocol
-    function initiate(
+    /// TODO Add Gnosis multisig functionality for spheres
+    function create(
         uint serverID, 
         string calldata token_name, 
         string calldata token_symbol
-    ) public returns (address daoAddress) {
+    ) public returns (Engagement _sphere) {
         uint symbolInventory = symbols.length;
         bytes32 _symbol = keccak256(abi.encodePacked(token_symbol));
 
@@ -47,34 +49,48 @@ contract EngagementDAO {
             require(symbols[i] != _symbol, "USED_SYMBOL");
         }
 
-        // Create token and community-level protocol
+        // Create Engagement Token
         Token _token = new Token(token_name, token_symbol);
-        Engagement _dao = new Engagement(_token, mana);
 
-        // Create DAO Profile 
-        DAO_Profile memory profile;
+        // Create Engagement Sphere
+        _sphere = new Engagement(_token, mana);
+
+        // Create Engagement Sphere Profile 
+        Sphere_Profile memory profile;
         profile.token = _token;
-        dao[serverID] = profile;
+        profile.sphere = _sphere;
 
-        emit DAOCreated(serverID, address(_token), token_symbol);
+        // Assign Engagement Sphere Profile to Server ID
+        spheres[serverID] = profile;
+
+        emit SphereCreated(serverID, address(_token), address(_sphere), token_symbol);
     }
 
     /*///////////////////////////////////////////////////////////////
-                                INVENTORY
+                                CONTROL
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Storage of Engagement Token symbols to prevent duplicate
+
+
+
+    /*///////////////////////////////////////////////////////////////
+                                REFLECT
+    //////////////////////////////////////////////////////////////*/
+
+    /// @notice Storage of Engagement Token symbols (as bytes)
     bytes32[] public symbols;
 
-    struct DAO_Profile {
+    struct Sphere_Profile {
         // DAO token
         ERC20 token;
         // Multi-sig 
         address council;
+        // Engagement Sphere
+        Engagement sphere;
     }
 
-    /// @notice Server id => DAO Profile
-    mapping(uint => DAO_Profile) public dao;
+    /// @notice Server id => Sphere Profile
+    mapping(uint => Sphere_Profile) public spheres;
 
 
 }
