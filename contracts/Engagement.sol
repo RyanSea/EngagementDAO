@@ -9,6 +9,7 @@ import {Token} from "./Token.sol";
 /// @title Engagement
 /// @notice Core Engagent Protocol
 /// TODO Add auth
+/// TODO Fix the temporary approval for staking
 contract Engagement is ERC4626 {
 
     /*///////////////////////////////////////////////////////////////
