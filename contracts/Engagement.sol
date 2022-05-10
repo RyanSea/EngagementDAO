@@ -167,17 +167,8 @@ contract Engagement is ERC4626 {
         uint current = block.timestamp;
         uint intervals = (current - last) /  duration;
         
-        // Use total to compound inflation
-        uint total = totalSupply;
-
-        // Compound
-        // TODO Do this without loop
-        for(uint i ; i < intervals; i++) {
-            total += total * rate / multiple;
-        }
-
-        // Assign new inflation
-        uint inflation = total - totalSupply;
+        // Calculate new inflation
+        uint inflation = totalSupply * rate ** intervals / multiple ** intervals - totalSupply;
 
         // Mint new inflation
         token.mint(address(this), inflation);

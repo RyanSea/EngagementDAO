@@ -5,7 +5,7 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 /// @title Engagement Mana Token
 /// @notice Core Protocol Token
-/// TODO Add auth (EngagementDAO)
+/// TODO Add auth
 contract Mana is ERC20 {
 
     constructor() 
