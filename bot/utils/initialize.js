@@ -10,8 +10,8 @@ const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MES
 const provider = new ethers.providers.JsonRpcProvider(polygon);
 const signer = new ethers.Wallet(privateKey, provider);
 
-const engagement = new ethers.Contract('0x25082c89055B1B01472F61b68fFBd80ABBeb9FD6', engagement_abi, signer)
-const token = new ethers.Contract('0xa041DFACfB70cD375fB1B627d2bb2c2C5B35BCC9', token_abi, signer)
+const engagement = new ethers.Contract('0x2f338f7C41c6587c3461eA6F548a7c39CF066aE1', engagement_abi, signer)
+const token = new ethers.Contract('0x724C291EeCA64582a01FB2f2f686fAa086E77c8A', token_abi, signer)
 
 exports.bot = bot;
 exports.engagement = engagement

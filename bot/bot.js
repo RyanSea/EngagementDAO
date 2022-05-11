@@ -1,5 +1,10 @@
 const {bot, engagement, token, hermes} = require('./utils/initialize.js')
 
+// at the top of your file
+const { MessageEmbed } = require('discord.js');
+
+
+
 bot.on('ready', () => {
     console.log('Hermes is awakened!')
 })
@@ -21,6 +26,29 @@ bot.on('messageCreate',async  msg => {
         }
     }
 
+    if (msg.content.startsWith('!embed')){
+        // inside a command, event listener, etc.
+        const exampleEmbed = new MessageEmbed()
+        .setColor('#0099ff')
+        .setTitle('Some title')
+        .setURL('https://discord.js.org/')
+        .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
+        .setDescription('Some description here')
+        .setThumbnail('https://i.imgur.com/AfFp7pu.png')
+        .addFields(
+            { name: 'Regular field title', value: 'Some value here' },
+            { name: '\u200B', value: '\u200B' },
+            { name: 'Inline field title', value: 'Some value here', inline: true },
+            { name: 'Inline field title', value: 'Some value here', inline: true },
+        )
+        .addField('Inline field title', 'Some value here', true)
+        .setImage('https://i.imgur.com/AfFp7pu.png')
+        .setTimestamp()
+        .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
+
+        msg.channel.send({ embeds: [exampleEmbed] });
+    }
+
     if (msg.content.startsWith('!power')) {
         amount = msg.content.split(' ')[1]
         if(isNaN(amount)) {
@@ -39,11 +67,21 @@ bot.on('messageCreate',async  msg => {
     }
 
     if (msg.content.startsWith("?powered")) {
-        profile = await engagement.user(msg.author.id)
-        address = profile.eoa
-        console.log(address)
-        bal = Number(await engagement.balanceOf(address)) / 10 ** 18
-        msg.reply(`You have ${String(bal)} tokens powered up`)
+
+        if (msg.mentions.members.size == 1) {
+
+        } else {
+            profile = await engagement.user(msg.author.id)
+            address = profile.eoa
+            bal = Number(await engagement.balanceOf(address)) / 10 ** 18
+            msg.reply(`You have ${String(bal)} tokens powered up`)
+        }
+
+    }
+
+    if (msg.content.startsWith('?pool')) {
+        let pool = Number(await engagement.rewardPool()) / 10 ** 18
+        msg.reply(String(pool))
     }
 
 
@@ -65,11 +103,20 @@ bot.on('messageCreate',async  msg => {
 
 bot.on('messageReactionAdd', async (reaction, user) => {
 
+    
+
     let engager = user.id
 
     let enagee = reaction.message.author.id;
 
-    await engagement.engage(engager, enagee)
+    isAuthenticated = await engagement.isAuthenticated(engager)
+    let isAuthenticated1 = await engagement.isAuthenticated(enagee)
+
+    if(isAuthenticated1 && isAuthenticated) {
+        await engagement.engage(engager, enagee)
+    }
+
+    
 })
 
 bot.login(hermes)

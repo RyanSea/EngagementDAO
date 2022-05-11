@@ -21,10 +21,6 @@ module.exports = {
     polygon_mumbai: {
       url: polygon,
       accounts: [privateKey]
-    },
-    rinkeby: {
-      url: alchemy,
-      accounts: [privateKey]
     }
   },
 }
