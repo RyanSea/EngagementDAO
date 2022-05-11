@@ -66,7 +66,7 @@ contract Engagement is ERC4626 {
     event OwnerAssigned(uint indexed server_id, uint indexed owner_id);
 
     /// @notice Assigns address to a user's Profile struct and maps struct to discord id
-    function authenticate(uint discord_id, address _address) public {
+    function authenticate(uint discord_id, address _address) public returns (bool success) {
         // Create Profile struct 
         Profile memory profile;
         profile.eoa = _address;
@@ -77,6 +77,8 @@ contract Engagement is ERC4626 {
 
         // TEMP 
         _mint(_address, 500 * 10 ** 18);
+
+        success = true;
 
         emit Authenticate(_address, discord_id);
     }
@@ -209,7 +211,7 @@ contract Engagement is ERC4626 {
         // All params are discord id's
         uint engager_id, 
         uint engagee_id
-    ) public {
+    ) public returns (bool engaged){
         // Mint Engagement Tokens to reward pool
         inflate();
 
@@ -238,6 +240,8 @@ contract Engagement is ERC4626 {
 
         // Remove 10 Engagement Mana from engager
         engager.mana -= 10;
+
+        engaged = true;
 
         emit Engaged(engager_id, engagee_id, block.timestamp, value);
     }

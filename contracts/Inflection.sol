@@ -70,7 +70,37 @@ contract Inflection {
                                 CONTROL
     //////////////////////////////////////////////////////////////*/
 
+    function authenticate(
+        uint server_id, 
+        uint discord_id,
+        address _address
+    ) public returns (bool success){
+        success = spheres[server_id].sphere.authenticate(discord_id, _address);
+    }
 
+    function powerUp(
+        uint server_id,
+        uint discord_id,
+        uint amount
+    ) public returns (bool powered){
+        powered = spheres[server_id].sphere.powerUp(discord_id, amount);
+    }
+
+    function powerDown(
+        uint server_id,
+        uint discord_id,
+        uint amount
+    ) public returns (bool powered) {
+        powered = spheres[server_id].sphere.powerDown(discord_id, amount);
+    }
+
+    function engage(
+        uint server_id,
+        uint engager_id,
+        uint engagee_id
+    ) public returns (bool engaged) {
+        engaged = spheres[server_id].sphere.engage(engager_id, engagee_id);
+    }
 
 
     /*///////////////////////////////////////////////////////////////
