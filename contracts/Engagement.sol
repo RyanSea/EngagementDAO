@@ -6,8 +6,6 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 import {Token} from "./Token.sol";
 
-import "hardhat/console.sol";
-
 /// @title Engagement
 /// @notice Core Engagent Protocol
 /// TODO Add auth
@@ -37,9 +35,7 @@ contract Engagement is ERC4626 {
 
             //mana = _mana;
         }
-    function getToken() public view returns(string memory name) {
-        name = token.name();
-    }
+
     /*///////////////////////////////////////////////////////////////
                                 AUTHENTICATE
     //////////////////////////////////////////////////////////////*/
