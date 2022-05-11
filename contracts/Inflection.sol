@@ -53,7 +53,7 @@ contract Inflection {
         Token _token = new Token(token_name, token_symbol);
 
         // Create Engagement Sphere
-        _sphere = new Engagement(_token, mana);
+        _sphere = new Engagement(_token);
 
         // Create Engagement Sphere Profile 
         Sphere_Profile memory profile;

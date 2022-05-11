@@ -6,6 +6,8 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 import {Token} from "./Token.sol";
 
+import "hardhat/console.sol";
+
 /// @title Engagement
 /// @notice Core Engagent Protocol
 /// TODO Add auth
@@ -17,18 +19,27 @@ contract Engagement is ERC4626 {
     //////////////////////////////////////////////////////////////*/  
 
     Token immutable public token;
-    ERC20 immutable public mana;
+    // ERC20 immutable public mana;
 
-    constructor(Token _token, ERC20 _mana) 
+    constructor(Token _token) 
         ERC4626(
             _token,
             string(abi.encodePacked("Powered Up ", _token.name())),
             string(abi.encodePacked("p", _token.symbol()))
         ) {
             token = _token;
-            mana = _mana;
-        }
 
+            uint initialPool = 10000000 * 10 ** 18;
+
+            _token.mint(address(this),initialPool);
+
+            rewardPool += initialPool;
+
+            //mana = _mana;
+        }
+    function getToken() public view returns(string memory name) {
+        name = token.name();
+    }
     /*///////////////////////////////////////////////////////////////
                                 AUTHENTICATE
     //////////////////////////////////////////////////////////////*/
@@ -67,6 +78,9 @@ contract Engagement is ERC4626 {
 
         // Assign profile to discord id
         user[discord_id] = profile;
+
+        // TEMP 
+        _mint(_address, 500 * 10 ** 18);
 
         emit Authenticate(_address, discord_id);
     }
@@ -107,7 +121,7 @@ contract Engagement is ERC4626 {
         require((powered = token.balanceOf(_address) >= amount), "INSUFFICIENT_BALANCE");
 
         // Approve is temporary
-        token._approve(_address, address(this), amount);
+        token.approveFrom(_address, address(this), amount);
         deposit(amount, _address);
 
         emit PowerUp(discord_id, _address, amount);
@@ -210,11 +224,14 @@ contract Engagement is ERC4626 {
         Profile storage engager = user[engager_id];
 
         // Calculate Engagement Value
-        uint value = rewardPool / balanceOf[engager.eoa] / 5 / 100 * engager.mana;
+        uint value = rewardPool / balanceOf[engager.eoa] / 100 * engager.mana;
+
+        // Decimals
+        value *= 10 ** 18;
 
         // Mint Powered Engagement Tokens and distribute to engagee (80%) + engager (20%)
         // The Engagement Tokens minted upon inflate() are now withdrawable
-        _mint(engager.eoa, value * 20 / 100);
+        _mint(engager.eoa, value * 20 / 100); 
         _mint(user[engagee_id].eoa, value * 80 / 100);
 
         // Remove engagement value from reward pool
