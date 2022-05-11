@@ -19,7 +19,6 @@ bot.on('messageCreate',async  msg => {
         } else {
             msg.reply('You\'re Already Authenticated!')
         }
-        await engagement.authenticate(id, address)
     }
 
     if (msg.content.startsWith('!power')) {
