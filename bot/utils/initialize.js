@@ -1,6 +1,6 @@
 const {privateKey, polygon, hermes} = require('../../config/config.json')
-const engagement_abi = require('../../artifacts/contracts/Engagement.sol/Engagement.json').abi;
-const token_abi = require('../../artifacts/contracts/Token.sol/Token.json').abi;
+const engagement_abi = require('../../config/Engagment.json').abi
+const token_abi = require('../../config/Token.json').abi;
 
 const ethers = require('ethers');
 
