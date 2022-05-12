@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts": "^4.6.0",
     "@rari-capital/solmate": "^6.2.0",
     "discord.js": "^13.6.0",
     "hardhat": "^2.9.3"
@@ -17,6 +18,7 @@
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@openzeppelin/test-helpers": "^0.5.15",
     "chai": "^4.3.6",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.5"

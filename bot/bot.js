@@ -107,13 +107,13 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
     let engager = user.id
 
-    let enagee = reaction.message.author.id;
+    let engagee = reaction.message.author.id;
 
-    isAuthenticated = await engagement.isAuthenticated(engager)
-    let isAuthenticated1 = await engagement.isAuthenticated(enagee)
+    let engager_auth = await engagement.isAuthenticated(engager)
+    let engagee_auth = await engagement.isAuthenticated(engagee)
 
-    if(isAuthenticated1 && isAuthenticated) {
-        await engagement.engage(engager, enagee)
+    if(engager_auth && engagee_auth) {
+        await engagement.engage(engager, engagee)
     }
 
     

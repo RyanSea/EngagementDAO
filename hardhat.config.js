@@ -1,6 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 
-const {polygon, alchemy, privateKey} = require('./config/config.json') //Alchemy URL and Private Key in config folder
+const {polygon, privateKey} = require('./config/config.json') //Alchemy URL and Private Key in config folder
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html

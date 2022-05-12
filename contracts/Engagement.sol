@@ -6,6 +6,8 @@ import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
 import {Token} from "./Token.sol";
 
+import "hardhat/console.sol";
+
 /// @title Engagement
 /// @notice Core Engagent Protocol
 /// TODO Add auth
@@ -29,7 +31,7 @@ contract Engagement is ERC4626 {
 
             uint initialPool = 10000000 * 10 ** 18;
 
-            _token.mint(address(this),initialPool);
+            _mint(address(this),initialPool);
 
             rewardPool += initialPool;
 
@@ -154,6 +156,9 @@ contract Engagement is ERC4626 {
     /// @notice Rate of inflation (x 100000) | 7 == 0.00007 | 9.9% /month @ 30 min freq
     uint public rate = 7;
 
+    // TEMP
+    uint public inflation;
+
     /// @notice The multiple required to get rate to a full number
     uint public multiple = 100000;
 
@@ -177,10 +182,17 @@ contract Engagement is ERC4626 {
     function inflate() public {
         // Caulculate inflation intervals since last inflation event
         uint current = block.timestamp;
+
         uint intervals = (current - last) /  duration;
         
+        inflation = totalSupply;
+
         // Calculate new inflation
-        uint inflation = totalSupply * rate ** intervals / multiple ** intervals - totalSupply;
+        // TODO Do this in 1 line
+        for(uint i; i < intervals; i++){
+            inflation += inflation * rate / multiple;
+        }
+        inflation -= totalSupply;
 
         // Mint new inflation
         token.mint(address(this), inflation);
