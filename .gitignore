@@ -8,3 +8,5 @@ typechain
 cache
 artifacts
 config/config.json
+
+!.artifacts/contracts/Engagement.sol/Engagement.json
