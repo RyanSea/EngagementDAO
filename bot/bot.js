@@ -1,16 +1,69 @@
-const {bot, engagement, token, hermes} = require('./utils/initialize.js')
+const {
+    bot, 
+    engagement, 
+    token, 
+    ethers,  
+    wc_engagement, 
+    wc_token, 
+    wcSigner, 
+    wcProvider,
+    MessageActionRow, 
+    MessageButton,
+    MessageEmbed,
+    MessageAttachment,
+    //abi,
+    ValuBot
+} = require('./utils/initialize.js')
 
-// at the top of your file
-const { MessageEmbed } = require('discord.js');
+var qr = require('qr-image');
 
+const myEoa = '0x44B269491f4ed800621433cd79bCF62319593C9e'
 
+var qr_png
+wcProvider.connector.on("display_uri", async (err, payload) => {
+    console.log(payload)
+    let code = payload.params[0]
+    qr_png = qr.image(code, { type: 'png' });
+});
 
-bot.on('ready', () => {
-    console.log('Hermes is awakened!')
+wcProvider.connector.on('session_request', async (err, payload) => {
+    console.log("Session Request:", payload)
 })
 
+// wcProvider.connector.on('connect', async (err, payload) => {
+//     console.log("Connect:", payload)
+//     console.log("wallet", payload.params.accounts )
+// })
+
+bot.on('ready', async () => {
+    console.log('Valu Bot Here!')
+    
+})
+
+// wcProvider.connector.on("display_uri", async (err, payload) => {
+//     //console.log("URI")
+//     let code = payload.params[0]
+//     //await QRCode.toFile('/Users/god/Desktop/Image/img.png', code)
+//     var qr_png = qr.image(code, { type: 'png' });
+
+   
+// });
+
+
+
 bot.on('messageCreate',async  msg => {
-    let address, isAuthenticated, id, bal, profile, amount;
+    let address, isAuthenticated, id, bal, profile, amount, name, symbol;
+
+    if (msg.content.startsWith('!create')) {
+       name =  msg.content.split(' ')[1]
+       symbol = msg.content.split(' ')[2]
+
+       if (!name && !symbol) {
+           msg.reply('Please enter the command as `!create tokenName tokenSymbol`')
+       } else {
+            engagement.create(msg.guildId, name, symbol)
+       }
+    }
 
     if (msg.content.startsWith('!auth')) {
         id = msg.author.id;
@@ -18,35 +71,16 @@ bot.on('messageCreate',async  msg => {
         if (!address) {
             msg.reply('Please enter your wallet address after the command e.g.: `!auth 0xaddress`')
         }
-        isAuthenticated = await engagement.isAuthenticated(id)
+        isAuthenticated = false//await engagement.isAuthenticated(id)
+        
+        
         if(!isAuthenticated) {
-            await engagement.authenticate(id, address)
+            let tx = await engagement.authenticate(msg.guildId, id, address)
+            await tx.wait();
+            msg.reply('Done')
         } else {
             msg.reply('You\'re Already Authenticated!')
         }
-    }
-
-    if (msg.content.startsWith('!embed')){
-        // inside a command, event listener, etc.
-        const exampleEmbed = new MessageEmbed()
-        .setColor('#0099ff')
-        .setTitle('Some title')
-        .setURL('https://discord.js.org/')
-        .setAuthor({ name: 'Some name', iconURL: 'https://i.imgur.com/AfFp7pu.png', url: 'https://discord.js.org' })
-        .setDescription('Some description here')
-        .setThumbnail('https://i.imgur.com/AfFp7pu.png')
-        .addFields(
-            { name: 'Regular field title', value: 'Some value here' },
-            { name: '\u200B', value: '\u200B' },
-            { name: 'Inline field title', value: 'Some value here', inline: true },
-            { name: 'Inline field title', value: 'Some value here', inline: true },
-        )
-        .addField('Inline field title', 'Some value here', true)
-        .setImage('https://i.imgur.com/AfFp7pu.png')
-        .setTimestamp()
-        .setFooter({ text: 'Some footer text here', iconURL: 'https://i.imgur.com/AfFp7pu.png' });
-
-        msg.channel.send({ embeds: [exampleEmbed] });
     }
 
     if (msg.content.startsWith('!power')) {
@@ -59,29 +93,49 @@ bot.on('messageCreate',async  msg => {
         }
     }
 
-    if (msg.content.startsWith("?bal")) {
-        profile = await engagement.user(msg.author.id)
-        address = profile.eoa
-        bal = Number(await token.balanceOf(address)) / 10 ** 18
-        msg.reply(`You have ${String(bal)} tokens`)
-    }
-
-    if (msg.content.startsWith("?powered")) {
-
-        if (msg.mentions.members.size == 1) {
-
+    if (msg.content.startsWith('!unpower')) {
+        amount = msg.content.split(' ')[1]
+        if(isNaN(amount)) {
+            msg.reply('Enter a valid number after the command e.g.: `!power 500`')
         } else {
-            profile = await engagement.user(msg.author.id)
-            address = profile.eoa
-            bal = Number(await engagement.balanceOf(address)) / 10 ** 18
-            msg.reply(`You have ${String(bal)} tokens powered up`)
-        }
+            amount = ethers.utils.parseEther(amount)
 
+            await engagement.powerDown(msg.author.id, amount)
+
+            await msg.reply('Successfully powered down!')
+        }
     }
 
-    if (msg.content.startsWith('?pool')) {
-        let pool = Number(await engagement.rewardPool()) / 10 ** 18
-        msg.reply(String(pool))
+    if(msg.content.startsWith('!test')) {
+        // let message = await msg.reply('Please choose a provider')
+        // await message.react('🔥');
+        //await wcProvider.enable()
+        await wcProvider.connector.createSession() 
+
+        
+        
+        let qrCode = new MessageAttachment(qr_png)
+        let qr = msg.reply({files: [qrCode]})
+        wcProvider.connector.on('connect', async (err, payload) => {
+            console.log("Connect:", payload)
+            console.log("wallet", payload.params.accounts )
+            console.log("Peer Meta", payload.params.peerMeta )
+
+            await (await qr).edit({content: "Connected!", files: []})
+        })
+        // const embed = new MessageEmbed()
+        //     .setColor('#0099ff')
+        //     .setTitle('THIS WILL BE A WALLETCONNECT QR CODE')
+        //     .setImage('/Users/god/Desktop/Image/img.png')
+
+        
+        // msg.reply({embeds: [embed]})
+        //console.log(accounts)
+        // let signer = new ethers.providers.Web3Provider(wcProvider);
+        // const eng = new ethers.Contract('0x2B73f707689E6CD57DCcEAB781bF8F71689427F2', abi, signer.getSigner())
+        // eng.authenticate('936681494401908756', accounts[0])
+        // msg.reply("worked")
+        //await wc_engagement.authenticate('814847668706082837', '0x6EE6D1DF5E2DccD784f7a4bf8eCE5Dbc1babBD45')
     }
 
 
@@ -95,28 +149,62 @@ bot.on('messageCreate',async  msg => {
         }
     }
 
+    if (msg.content.startsWith('!wallet')) {
+        const row = new MessageActionRow()
+			.addComponents(
+				new MessageButton()
+					.setCustomId('walletconnect')
+					.setLabel('WalletConnect')
+					.setStyle('PRIMARY')
+                    .setEmoji('974755262567153675'),
+                new MessageButton()
+					.setCustomId('coinbase')
+					.setLabel('Coinbase')
+					.setStyle('PRIMARY')
+                    .setEmoji('974754753475121162')
+			);
+
+		await msg.reply({ content: 'Choose wallet provider', components: [row] });
+    }
+
     if (msg.content.startsWith("?id")) {
         await msg.reply(msg.author.id)
     }
 
 })
 
+bot.on('interactionCreate', async interaction => {
+	if (!interaction.isButton()) return;
+	
+    if(interaction.customId === "walletconnect") {
+
+        const embed = new MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle('THIS WILL BE A WALLETCONNECT QR CODE')
+
+             .setImage('https://files.peakd.com/file/peakd-hive/autocrat/23zk5xN4JWXkUqrmMEfTmsoC8wJn33zysKpSoeb32eqpiuCFFEW6BFqALLXE5E5f3v3dV.png')
+    
+
+        await interaction.message.edit({ content: '\u200b', components: [], embeds: [embed]})
+    }
+});
+
 bot.on('messageReactionAdd', async (reaction, user) => {
 
-    
+    if(user.bot) return
 
     let engager = user.id
 
     let engagee = reaction.message.author.id;
+    let msg = reaction.message;
 
-    let engager_auth = await engagement.isAuthenticated(engager)
-    let engagee_auth = await engagement.isAuthenticated(engagee)
+    let engager_auth = await engagement.isAuthenticated(msg.guildId,engager)
+    let engagee_auth = await engagement.isAuthenticated(msg.guildId,engagee)
 
     if(engager_auth && engagee_auth) {
-        await engagement.engage(engager, engagee)
+        await engagement.engage(msg.guildId,engager, engagee)
     }
-
     
 })
 
-bot.login(hermes)
+bot.login(ValuBot)

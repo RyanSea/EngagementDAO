@@ -1,18 +1,10 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import {ERC4626} from  "@rari-capital/solmate/src/mixins/ERC4626.sol";
-import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
+import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
+import { Token } from "./Token.sol";
 
-import {Token} from "./Token.sol";
-
-import "hardhat/console.sol";
-
-/// @title Engagement
-/// @notice Core Engagent Protocol
-/// TODO Add auth
-/// TODO Fix the temporary approval for staking
-contract Engagement is ERC4626 {
+contract Sphere is ERC20 {
 
     /*///////////////////////////////////////////////////////////////
                                 CONSTRUCT
@@ -22,24 +14,21 @@ contract Engagement is ERC4626 {
     // ERC20 immutable public mana;
 
     constructor(Token _token) 
-        ERC4626(
-            _token,
+        ERC20(
             string(abi.encodePacked("Powered Up ", _token.name())),
-            string(abi.encodePacked("p", _token.symbol()))
+            string(abi.encodePacked("p", _token.symbol())),
+            18
         ) {
             token = _token;
 
-            uint initialPool = 10000000 * 10 ** 18;
+            // Set initial reward pool
+            rewardPool = 10000000 * 10 ** 18;
 
-            _mint(address(this),initialPool);
-
-            rewardPool += initialPool;
-
-            //mana = _mana;
+            _mint(address(this),rewardPool);
         }
 
     /*///////////////////////////////////////////////////////////////
-                                AUTHENTICATE
+                                USER
     //////////////////////////////////////////////////////////////*/
 
     struct Profile {
@@ -68,32 +57,27 @@ contract Engagement is ERC4626 {
     event OwnerAssigned(uint indexed server_id, uint indexed owner_id);
 
     /// @notice Assigns address to a user's Profile struct and maps struct to discord id
-    function authenticate(uint discord_id, address _address) public returns (bool success) {
+    function authenticate(
+        uint discord_id, 
+        address _address
+    ) public {
+
         // Create Profile struct 
         Profile memory profile;
         profile.eoa = _address;
-        profile.mana = 100;
 
         // Assign profile to discord id
         user[discord_id] = profile;
-
+        
         // TEMP 
         _mint(_address, 500 * 10 ** 18);
-
-        success = true;
+        token.mint(address(this), 500 * 10 ** 18);
 
         emit Authenticate(_address, discord_id);
     }
 
     function isAuthenticated(uint discord_id) public view returns (bool authenticated) {
         authenticated = user[discord_id].eoa != address(0);
-    }
-
-    /// @notice Assigns owner to server which will allow owner limit tokenized engagement privileges (TODO)
-    function setServerOwner(uint discord_id, uint server_id) public {
-        owner[server_id] = discord_id;
-
-        emit OwnerAssigned(server_id, discord_id);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -116,27 +100,29 @@ contract Engagement is ERC4626 {
 
     /// @notice Stake
     // TODO Implement conventional wallet approval & remove _approve from ERC20.sol
-    function powerUp(uint discord_id, uint amount) public returns (bool powered){
+    function powerUp(uint discord_id, uint amount) public{
         address _address = user[discord_id].eoa;
-        require((powered = token.balanceOf(_address) >= amount), "INSUFFICIENT_BALANCE");
+        require((token.balanceOf(_address) >= amount), "INSUFFICIENT_BALANCE");
 
-        // Approve is temporary
-        token.approveFrom(_address, address(this), amount);
-        deposit(amount, _address);
+        // TEMP 
+        token.approvedTransfer(_address, address(this), amount);
+        _mint(_address, amount);
 
         emit PowerUp(discord_id, _address, amount);
     }
 
     /// @notice Unstake
-    function powerDown(uint discord_id, uint amount) public returns (bool depowered) {
+    function powerDown(uint discord_id, uint amount) public {
         address _address = user[discord_id].eoa;
-        require((depowered = balanceOf[_address] >= amount), "INSUFFICIENT_BALANCE");
+        require((balanceOf[_address] >= amount), "INSUFFICIENT_BALANCE");
+        
+        _burn(_address, amount);
 
-        withdraw(amount, _address, _address);
+        token.transfer(_address, amount);
 
         emit PowerDown(discord_id, _address, amount);
     }
-    
+
     /*///////////////////////////////////////////////////////////////
                         CORE ENGAGEMENT PROTOCOL
     //////////////////////////////////////////////////////////////*/
@@ -173,11 +159,6 @@ contract Engagement is ERC4626 {
     /// @notice Inflation event
     event Inflation(uint time, uint amount);
 
-    /// @notice The total amount of Powered Up tokens
-    function totalAssets() public view override returns (uint total){
-        total = totalSupply;
-    }
-
     /// @notice Inflate the rewardPool based on the amount of Powered Up Engagement Tokens
     function inflate() public {
         // Caulculate inflation intervals since last inflation event
@@ -210,10 +191,10 @@ contract Engagement is ERC4626 {
     /// it decreases by 10 with use and increases by 1 every 36 seconds
     function calculateMana(uint discord_id) private {
         // Add 1 mana for every 36 seconds that past since last engagement
-        user[discord_id].mana += (block.timestamp - user[discord_id].lastEngagement) / 36;
+        uint mana = user[discord_id].mana + (block.timestamp - user[discord_id].lastEngagement) / 36;
 
         // Cap mana at 100
-        if (user[discord_id].mana > 100) user[discord_id].mana = 100;
+        user[discord_id].mana = mana <= 100 ? mana : 100;
     }
 
     /// @notice Core engagement function
@@ -223,7 +204,7 @@ contract Engagement is ERC4626 {
         // All params are discord id's
         uint engager_id, 
         uint engagee_id
-    ) public returns (bool engaged){
+    ) public {
         // Mint Engagement Tokens to reward pool
         inflate();
 
@@ -253,8 +234,8 @@ contract Engagement is ERC4626 {
         // Remove 10 Engagement Mana from engager
         engager.mana -= 10;
 
-        engaged = true;
-
         emit Engaged(engager_id, engagee_id, block.timestamp, value);
     }
+
+
 }

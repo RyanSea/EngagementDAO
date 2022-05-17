@@ -1,4 +1,4 @@
-# InflectionDAO
+# ValuDAO
 ## What if we could design an ecnomic system native to the internet?
 In our current system we're forced to treat value and monetezation as separate entities. In social media the value is the content, and the monetization is through ads and the sale of our personal data. This works well enough for the platform, but it's at the expense of the actual users. 
 

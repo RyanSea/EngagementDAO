@@ -6,7 +6,7 @@ async function main() {
   const Token_Contract = await hre.ethers.getContractFactory("Token");
   const Engagement_Contract = await hre.ethers.getContractFactory("Engagement")
 
-  const token = await Token_Contract.deploy("Engagement Token", "ENGAGE")
+  const token = await Token_Contract.deploy("Engagement Token", "ENGE")
   await token.deployed();
 
   const engagement = await Engagement_Contract.deploy(token.address);

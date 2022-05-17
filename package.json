@@ -12,8 +12,11 @@
   "dependencies": {
     "@openzeppelin/contracts": "^4.6.0",
     "@rari-capital/solmate": "^6.2.0",
+    "@walletconnect/web3-provider": "^1.7.8",
     "discord.js": "^13.6.0",
-    "hardhat": "^2.9.3"
+    "hardhat": "^2.9.3",
+    "qr-image": "^3.2.0",
+    "qrcode": "^1.5.0"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.5",
