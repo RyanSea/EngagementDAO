@@ -22,7 +22,9 @@ contract Sphere is ERC20 {
             token = _token;
 
             // Set initial reward pool
-            rewardPool = 10000000 * 10 ** 18;
+            rewardPool = 100000 * 10 ** 18;
+
+            last = block.timestamp;
 
             _mint(address(this),rewardPool);
         }
@@ -134,7 +136,7 @@ contract Sphere is ERC20 {
     uint public core;
 
     /// @notice Last time inflation was calculated 
-    uint public last = block.timestamp;
+    uint public last; 
 
     /// @notice Compound frequency in seconds | 1800 == 30 mins
     uint public duration = 1800;
