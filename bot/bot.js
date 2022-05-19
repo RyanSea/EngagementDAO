@@ -21,7 +21,7 @@ const myEoa = '0x44B269491f4ed800621433cd79bCF62319593C9e'
 
 var qr_png
 wcProvider.connector.on("display_uri", async (err, payload) => {
-    console.log(payload)
+    //console.log(payload)
     let code = payload.params[0]
     qr_png = qr.image(code, { type: 'png' });
 });
@@ -31,24 +31,16 @@ wcProvider.connector.on('session_request', async (err, payload) => {
 })
 
 // wcProvider.connector.on('connect', async (err, payload) => {
-//     console.log("Connect:", payload)
-//     console.log("wallet", payload.params.accounts )
+//     console.log(payload)
+//     console.log(payload.params)
+//     console.log(payload.params.accounts)
+//     //console.log(payload.params.accounts[0])
 // })
 
 bot.on('ready', async () => {
     console.log('Valu Bot Here!')
     
 })
-
-// wcProvider.connector.on("display_uri", async (err, payload) => {
-//     //console.log("URI")
-//     let code = payload.params[0]
-//     //await QRCode.toFile('/Users/god/Desktop/Image/img.png', code)
-//     var qr_png = qr.image(code, { type: 'png' });
-
-   
-// });
-
 
 
 bot.on('messageCreate',async  msg => {
@@ -58,11 +50,22 @@ bot.on('messageCreate',async  msg => {
        name =  msg.content.split(' ')[1]
        symbol = msg.content.split(' ')[2]
 
-       if (!name && !symbol) {
+        if (!name && !symbol) {
            msg.reply('Please enter the command as `!create tokenName tokenSymbol`')
-       } else {
-            engagement.create(msg.guildId, name, symbol)
-       }
+        } else {
+            let created = await engagement.sphereCreated(msg.guildId)
+            if (created) {
+                msg.reply("Server already has an Engagement Sphere")
+            } else {
+                try {
+                    let tx = await engagement.create(msg.guildId, name, symbol)
+                    await tx.wai()
+                    msg.reply("Engagement Sphere Created")
+                } catch (err) {
+                    msg.reply("Token Symbol alraedy taken. PLease choose another.")
+                }
+            }
+        }
     }
 
     if (msg.content.startsWith('!auth')) {
@@ -93,6 +96,10 @@ bot.on('messageCreate',async  msg => {
         }
     }
 
+    if (msg.content.startsWith('!tokenAddress')){
+
+    }
+
     if (msg.content.startsWith('!unpower')) {
         amount = msg.content.split(' ')[1]
         if(isNaN(amount)) {
@@ -117,9 +124,8 @@ bot.on('messageCreate',async  msg => {
         let qrCode = new MessageAttachment(qr_png)
         let qr = msg.reply({files: [qrCode]})
         wcProvider.connector.on('connect', async (err, payload) => {
-            console.log("Connect:", payload)
-            console.log("wallet", payload.params.accounts )
-            console.log("Peer Meta", payload.params.peerMeta )
+            //console.log("Connect:", payload)
+            console.log(payload.params[0].accounts[0])
 
             await (await qr).edit({content: "Connected!", files: []})
         })

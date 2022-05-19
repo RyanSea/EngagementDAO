@@ -13,7 +13,7 @@ const signer = new ethers.Wallet(privateKey, provider);
 
 const wcProvider = new WalletConnectProvider.default({
     rpc: {
-        80001: polygon
+        80001: polygon // http:// polygon_mumbai Alchemy url
     },
     qrcode: false
 })

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {Sphere} from "./Sphere.sol";
-import {Token} from "./Token.sol";
+import {EngagementToken} from "./EngagementToken.sol";
 
 contract SphereFactory {
 
@@ -11,7 +11,7 @@ contract SphereFactory {
 
     /// @notice Creates community level protocol
     /// TODO Add Gnosis multisig functionality for spheres
-    function create(uint server_id, Token _token) public {
+    function create(uint server_id, EngagementToken _token) public {
         // Create Engagement Sphere
         Sphere _sphere = new Sphere(_token);
 

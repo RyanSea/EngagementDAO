@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
-import { Token } from "./Token.sol";
+import { EngagementToken } from "./EngagementToken.sol";
 
 contract Sphere is ERC20 {
 
@@ -10,10 +10,10 @@ contract Sphere is ERC20 {
                                 CONSTRUCT
     //////////////////////////////////////////////////////////////*/  
 
-    Token immutable public token;
+    EngagementToken immutable public token;
     // ERC20 immutable public mana;
 
-    constructor(Token _token) 
+    constructor(EngagementToken _token) 
         ERC20(
             string(abi.encodePacked("Powered Up ", _token.name())),
             string(abi.encodePacked("p", _token.symbol())),
