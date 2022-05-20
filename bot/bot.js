@@ -38,6 +38,24 @@ wcProvider.connector.on('session_request', async (err, payload) => {
     console.log("Session Request:", payload)
 })
 
+const express = require('express')
+const app = express()
+
+app.listen(6969) // change
+
+app.get("/hook", (req, res) => {
+  const merkleRoot = req.query.merkleRoot
+  const nullifierHash = req.query.nullifierHash
+  const proof = req.query.proof
+
+  console.log(merkleRoot)
+  console.log(proof)
+
+  res.send("World ID Verification Success! Return to Discord!")
+
+  res.status(200).end() 
+})
+
 // wcProvider.connector.on('connect', async (err, payload) => {
 //     console.log(payload)
 //     console.log(payload.params)
