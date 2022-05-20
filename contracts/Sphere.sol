@@ -2,7 +2,9 @@
 pragma solidity ^0.8.0;
 
 import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
+
 import { EngagementToken } from "./EngagementToken.sol";
+import { VALU } from "./VALU.sol";
 
 contract Sphere is ERC20 {
 
@@ -11,16 +13,17 @@ contract Sphere is ERC20 {
     //////////////////////////////////////////////////////////////*/  
 
     EngagementToken immutable public token;
-    // ERC20 immutable public mana;
+    VALU immutable public valu;
 
-    constructor(EngagementToken _token) 
+    constructor(EngagementToken _token, VALU _valu) 
         ERC20(
             string(abi.encodePacked("Powered Up ", _token.name())),
             string(abi.encodePacked("p", _token.symbol())),
             18
         ) {
             token = _token;
-
+            valu = _valu;
+            
             // Set initial reward pool
             rewardPool = 100000 * 10 ** 18;
 
@@ -124,6 +127,20 @@ contract Sphere is ERC20 {
 
         emit PowerDown(discord_id, _address, amount);
     }
+
+    /// @notice burn staked tokens for $VALU
+    function exit(uint discord_id, uint amount) public {
+        address _address = user[discord_id].eoa;
+        uint _amount = token.balanceOf(_address) >= amount ? amount : token.balanceOf(_address);
+
+        uint _exit = valu.balanceOf(address(this)) / totalSupply * _amount;
+
+        _burn(_address, _amount);
+        token.burn(address(this), _amount);
+
+        valu.transfer(_address, _exit);
+    }
+
 
     /*///////////////////////////////////////////////////////////////
                         CORE ENGAGEMENT PROTOCOL

@@ -13,6 +13,10 @@ contract EngagementToken is ERC20 {
         _mint(to, amount);
     }
 
+    function burn(address from, uint amount) public {
+        _burn(from, amount);
+    }
+
     function approvedTransfer(
         address owner,
         address spender, 

@@ -21,6 +21,14 @@ module.exports = {
     polygon_mumbai: {
       url: polygon,
       accounts: [privateKey]
+    },
+    arbitrum: {
+      url: "https://rinkeby.arbitrum.io/rpc",
+      accounts: [privateKey]
+    },
+    meter: {
+      url: "https://rpctest.meter.io/",
+      accounts: [privateKey]
     }
   },
 }

@@ -1,8 +1,9 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.0;
 
-import {Sphere} from "./Sphere.sol";
-import {EngagementToken} from "./EngagementToken.sol";
+import { Sphere } from "./Sphere.sol";
+import { EngagementToken } from "./EngagementToken.sol";
+import { VALU } from "./VALU.sol";
 
 contract SphereFactory {
 
@@ -11,9 +12,9 @@ contract SphereFactory {
 
     /// @notice Creates community level protocol
     /// TODO Add Gnosis multisig functionality for spheres
-    function create(uint server_id, EngagementToken _token) public {
+    function create(uint server_id, EngagementToken _token, VALU valu) public {
         // Create Engagement Sphere
-        Sphere _sphere = new Sphere(_token);
+        Sphere _sphere = new Sphere(_token, valu);
 
         // Assign Engagement Sphere Profile to Server ID
         spheres[server_id] = address(_sphere);

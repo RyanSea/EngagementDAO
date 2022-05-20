@@ -1,6 +1,8 @@
 const {
     bot, 
-    engagement, 
+    valu, 
+    arbValu,
+    meterValu,
     token, 
     ethers,  
     wc_engagement, 
@@ -15,9 +17,15 @@ const {
     ValuBot
 } = require('./utils/initialize.js')
 
-var qr = require('qr-image');
+const {createSphere, tokenize} = require('./utils/utils')
 
+var qr = require('qr-image');
 const myEoa = '0x44B269491f4ed800621433cd79bCF62319593C9e'
+
+const mumbaiURL = "https://mumbai.polygonscan.com/address/"
+const arbitrumURL = "https://testnet.arbiscan.io/address/"
+const meterURL = "https://scan-warringstakes.meter.io/address/"
+
 
 var qr_png
 wcProvider.connector.on("display_uri", async (err, payload) => {
@@ -47,42 +55,53 @@ bot.on('messageCreate',async  msg => {
     let address, isAuthenticated, id, bal, profile, amount, name, symbol;
 
     if (msg.content.startsWith('!create')) {
-       name =  msg.content.split(' ')[1]
-       symbol = msg.content.split(' ')[2]
 
-        if (!name && !symbol) {
-           msg.reply('Please enter the command as `!create tokenName tokenSymbol`')
-        } else {
-            let created = await engagement.sphereCreated(msg.guildId)
-            if (created) {
-                msg.reply("Server already has an Engagement Sphere")
-            } else {
-                try {
-                    let tx = await engagement.create(msg.guildId, name, symbol)
-                    await tx.wai()
-                    msg.reply("Engagement Sphere Created")
-                } catch (err) {
-                    msg.reply("Token Symbol alraedy taken. PLease choose another.")
-                }
-            }
-        }
+        [name,symbol] = tokenize(msg.content)
+
+        //let tx = await valu.create(msg.guildId, name, symbol)
+        let txArb = await arbValu.create(msg.guildId, name, symbol)
+        //let txMeter = await meterValu.create(msg.guildId, name, symbol)
+        
+
+        let networkChan = msg.guild.channels.cache.find(channel => channel.name === "networks")
+
+        // await tx.wait()
+        // let mumbaiSphere = (await valu.spheres(msg.guildId)).sphere
+        // await networkChan.send(`Mumbai: <${mumbaiURL + mumbaiSphere}>`) 
+
+        await txArb.wait()
+        let arbSphere = (await arbValu.spheres(msg.guildId)).sphere
+        await networkChan.send(`Arbitrum: <${arbitrumURL + arbSphere}>`) 
+
+        // await txMeter.wait()
+        // let meterSphere = (await meterValu.spheres(msg.guildId)).sphere
+        // await networkChan.send(`Meter: <${meterURL + meterSphere}>`) 
+        
+        
+
     }
 
     if (msg.content.startsWith('!auth')) {
-        id = msg.author.id;
-        address = msg.content.split(' ')[1];
-        if (!address) {
-            msg.reply('Please enter your wallet address after the command e.g.: `!auth 0xaddress`')
-        }
-        isAuthenticated = false//await engagement.isAuthenticated(id)
+        id = msg.author.id
         
+        isAuthenticated = await valu.isAuthenticated(msg.guildId, id)
         
-        if(!isAuthenticated) {
-            let tx = await engagement.authenticate(msg.guildId, id, address)
-            await tx.wait();
-            msg.reply('Done')
-        } else {
+        if(isAuthenticated) {
             msg.reply('You\'re Already Authenticated!')
+        } else {
+            // Create QR code
+            await wcProvider.connector.createSession() 
+            let qrCode = new MessageAttachment(qr_png)
+            let qr = msg.reply({files: [qrCode]})
+
+            wcProvider.connector.on('connect', async (err, payload) => {
+                address = payload.params[0].accounts[0]
+                //await valu.authenticate(msg.guildId, id, address)
+                await arbValu.authenticate(msg.guildId, id, address)
+                //await meterValu.authenticate(msg.guildId, id, address)
+                await (await qr).edit({content: "Connected!", files: []})
+                await wcProvider.disconnect()
+            })
         }
     }
 
@@ -91,7 +110,7 @@ bot.on('messageCreate',async  msg => {
         if(isNaN(amount)) {
             msg.reply('Enter a valid number after the command e.g.: `!power 500`')
         } else {
-            await engagement.powerUp(msg.author.id, ethers.utils.parseEther(amount))
+            await valu.powerUp(msg.author.id, ethers.utils.parseEther(amount))
             await msg.reply('Successfully powered up!')
         }
     }
@@ -107,47 +126,21 @@ bot.on('messageCreate',async  msg => {
         } else {
             amount = ethers.utils.parseEther(amount)
 
-            await engagement.powerDown(msg.author.id, amount)
+            await valu.powerDown(msg.author.id, amount)
 
             await msg.reply('Successfully powered down!')
         }
     }
 
     if(msg.content.startsWith('!test')) {
-        // let message = await msg.reply('Please choose a provider')
-        // await message.react('🔥');
-        //await wcProvider.enable()
-        await wcProvider.connector.createSession() 
-
-        
-        
-        let qrCode = new MessageAttachment(qr_png)
-        let qr = msg.reply({files: [qrCode]})
-        wcProvider.connector.on('connect', async (err, payload) => {
-            //console.log("Connect:", payload)
-            console.log(payload.params[0].accounts[0])
-
-            await (await qr).edit({content: "Connected!", files: []})
-        })
-        // const embed = new MessageEmbed()
-        //     .setColor('#0099ff')
-        //     .setTitle('THIS WILL BE A WALLETCONNECT QR CODE')
-        //     .setImage('/Users/god/Desktop/Image/img.png')
-
-        
-        // msg.reply({embeds: [embed]})
-        //console.log(accounts)
-        // let signer = new ethers.providers.Web3Provider(wcProvider);
-        // const eng = new ethers.Contract('0x2B73f707689E6CD57DCcEAB781bF8F71689427F2', abi, signer.getSigner())
-        // eng.authenticate('936681494401908756', accounts[0])
-        // msg.reply("worked")
-        //await wc_engagement.authenticate('814847668706082837', '0x6EE6D1DF5E2DccD784f7a4bf8eCE5Dbc1babBD45')
+        let networkChan = (await valu.spheres(msg.guildId)).sphere
+        console.log(networkChan)
     }
 
 
     if (msg.content.startsWith('?auth')) {
         id = msg.author.id
-        isAuthenticated = await engagement.isAuthenticated(id)
+        isAuthenticated = await valu.isAuthenticated(id)
         if (isAuthenticated) {
             await msg.reply("Already Authenticated")
         } else {
@@ -204,11 +197,13 @@ bot.on('messageReactionAdd', async (reaction, user) => {
     let engagee = reaction.message.author.id;
     let msg = reaction.message;
 
-    let engager_auth = await engagement.isAuthenticated(msg.guildId,engager)
-    let engagee_auth = await engagement.isAuthenticated(msg.guildId,engagee)
+    let engager_auth = await valu.isAuthenticated(msg.guildId,engager)
+    let engagee_auth = await valu.isAuthenticated(msg.guildId,engagee)
 
     if(engager_auth && engagee_auth) {
-        await engagement.engage(msg.guildId,engager, engagee)
+        //await valu.engage(msg.guildId,engager, engagee)
+        await arbValu.engage(msg.guildId,engager, engagee)
+        //await meterValu.engage(msg.guildId,engager, engagee)
     }
     
 })

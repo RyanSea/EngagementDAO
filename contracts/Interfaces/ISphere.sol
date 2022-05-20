@@ -13,4 +13,5 @@ interface ISphere {
 
     function engage(uint engager_id, uint engagee_id) external;
 
+    function exit(uint discord_id, uint amount) external;
 }

@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 //import {ERC20} from "@rari-capital/solmate/src/tokens/ERC20.sol";
 import {EngagementToken} from "./EngagementToken.sol";
+import {VALU} from "./VALU.sol";
 
 import {ISphere} from "./Interfaces/ISphere.sol";
 import {ISphereFactory} from "./Interfaces/ISphereFactory.sol";
@@ -24,9 +25,10 @@ contract ValuDAO {
 
     //ERC20 immutable public mana;
     ISphereFactory public immutable factory;
+    VALU public immutable valu;
 
-    constructor (ISphereFactory _factory) {
-        //mana = _mana;
+    constructor (ISphereFactory _factory, VALU _valu) {
+        valu = _valu;
         factory = _factory;
         symbols.push(keccak256(abi.encodePacked("MANA")));
     }
@@ -49,14 +51,14 @@ contract ValuDAO {
         string calldata token_name, 
         string calldata token_symbol
     ) public  {
-        require(!sphereCreated(server_id), "SPHERE_ALREADY_CREATED");
+        //require(!sphereCreated(server_id), "SPHERE_ALREADY_CREATED");
 
         // Will revert if already exists
-        bytes32 _symbol = symbolExists(token_symbol);
+        //bytes32 _symbol = symbolExists(token_symbol);
         
         EngagementToken _token = new EngagementToken(token_name, token_symbol);
 
-        factory.create(server_id, _token);
+        factory.create(server_id, _token, valu);
 
         ISphere _sphere = ISphere(factory.viewSphere(server_id));
 
@@ -67,7 +69,9 @@ contract ValuDAO {
 
         spheres[server_id] = profile;
 
-        symbols.push(_symbol);
+        valu.mint(address(_sphere), 10000 * 10 ** 18);
+
+        //symbols.push(_symbol);
 
         emit SphereCreated(server_id, address(_token), address(_sphere), token_symbol);
     }
@@ -105,6 +109,14 @@ contract ValuDAO {
         uint amount
     ) public {
         spheres[server_id].sphere.powerDown(discord_id, amount);
+    }
+
+    function exit(
+         uint server_id,
+        uint discord_id,
+        uint amount
+    ) public {
+        spheres[server_id].sphere.exit(discord_id, amount);
     }
 
     function engage(
