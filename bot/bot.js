@@ -41,7 +41,7 @@ wcProvider.connector.on('session_request', async (err, payload) => {
 const express = require('express')
 const app = express()
 
-app.listen(6969) // change
+app.listen(80) // change
 
 app.get("/hook", (req, res) => {
   const merkleRoot = req.query.merkleRoot
