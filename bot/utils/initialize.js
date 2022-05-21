@@ -10,12 +10,12 @@ const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, MessageA
 const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_MESSAGES] });
 
 /// POLYGON
-const airdrop_contract = '0x9e68eFe274BF5F9801CFbd052073e5Aaefbd6390'
+const airdrop_address = '0x9e68eFe274BF5F9801CFbd052073e5Aaefbd6390'
 const provider = new ethers.providers.JsonRpcProvider(polygon);
 const signer = new ethers.Wallet(privateKey, provider);
-const valu = new ethers.Contract('0x53Bf9c51daa15BC934EBfE48e1e1aBa432F6b777', dao_abi, signer)
+const valu = new ethers.Contract('0x1D5bdd1d75025f84F1645F8136d9835662EBb174', dao_abi, signer)
 const token = new ethers.Contract('0x621e900eF9A39c4D84cDd20E5A847Fe095DC7778', token_abi, signer)
-const airdrop = new ethers.Contract(airdrop_contract, airdrop_abi, signer)
+const airdrop = new ethers.Contract(airdrop_address, airdrop_abi, signer)
 
 
 /// ARBITRUM
@@ -53,7 +53,7 @@ exports.meterValu = meterValu;
 exports.arbValu = arbValu;
 exports.token = token;
 exports.airdrop = airdrop;
-exports.airdrop_contract = airdrop_contract
+exports.airdrop_address = airdrop_address
 // exports.wc_engagement = wc_engagement;
 // exports.wc_token = wc_token;
 exports.ValuBot = ValuBot;

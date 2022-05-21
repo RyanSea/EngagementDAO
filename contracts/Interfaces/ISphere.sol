@@ -5,7 +5,7 @@ interface ISphere {
 
     function authenticate(uint discord_id, address _address) external;
 
-    function isAuthenticated(uint discord_id) external view returns (bool);
+    function getAddress(uint discord_id) external view returns (address);
 
     function powerUp(uint discord_id, uint amount) external;
 

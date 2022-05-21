@@ -2,8 +2,11 @@
 pragma solidity ^0.8.0;
 
 import { ISemaphore } from "./Interfaces/ISemaphore.sol";
-import { EngagementToken } from "./EngagementToken.sol";
 import { ByteHasher } from "./Libraries/ByteHasher.sol";
+
+import { ERC20 } from "@rari-capital/solmate/src/tokens/ERC20.sol";
+
+import "hardhat/console.sol";
 
 /// @title Airdrop
 /// @notice World ID Powered Airdrop
@@ -20,19 +23,13 @@ contract Airdrop {
     /// @dev The Semaphore group ID whose participants can claim this airdrop
     uint256 internal immutable groupId = 1;
 
-    /// @notice The ERC20 token airdropped to participants
-    EngagementToken public immutable token;
-
     /// @notice The amount of tokens that participants will receive upon claiming
     uint256 public immutable airdropAmount = 600 * 10 ** 18;
 
     constructor(
-        ISemaphore _semaphore,
-        EngagementToken _token
+        ISemaphore _semaphore
     ) {
         semaphore = _semaphore;
-        token = _token;
-        token.mint(address(this), 100000 * 10 ** 18);
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -51,6 +48,7 @@ contract Airdrop {
     /// @param nullifierHash The nullifier for this proof, preventing double signaling
     /// @param proof The zero knowledge proof that demostrates the claimer is part of the Semaphore group
     function claim(
+        address token,
         address receiver,
         uint256 root,
         uint256 nullifierHash,
@@ -66,10 +64,12 @@ contract Airdrop {
             abi.encodePacked(address(this)).hashToField(),
             proof
         );
-
+        // console.log(root);
+        // console.log(nullifierHash);
+        // console.log(proof[0]);
         // nullifierHashes[nullifierHash] = true;
 
-        token.transfer(receiver, airdropAmount);
+        ERC20(token).transfer(receiver, airdropAmount);
     }
 
     

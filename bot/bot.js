@@ -6,7 +6,7 @@ const {
     token, 
     ethers,  
     airdrop,
-    airdrop_contract,
+    airdrop_address,
     wc_engagement, 
     wc_token, 
     wcSigner, 
@@ -20,14 +20,16 @@ const {
 } = require('./utils/initialize.js')
 
 const {createSphere, tokenize} = require('./utils/utils')
-
-var qr = require('qr-image');
-const myEoa = '0xf5f0835DE49B6D288a180865014289A35D07c5e5'
+const express = require('express');
 const {defaultAbiCoder} = require('@ethersproject/abi')
 const { keccak256 } =  require("@ethersproject/solidity")
+var qr = require('qr-image');
 
-const mumbaiURL = "https://mumbai.polygonscan.com/address/"
-const arbitrumURL = "https://testnet.arbiscan.io/address/"
+const myEoa = '0xf5f0835DE49B6D288a180865014289A35D07c5e5'
+
+
+const mumbaiURL = "https://mumbai.polygonscan.com/token/"
+//const arbitrumURL = "https://testnet.arbiscan.io/token/"
 const meterURL = "https://scan-warringstakes.meter.io/address/"
 
 
@@ -42,8 +44,7 @@ wcProvider.connector.on('session_request', async (err, payload) => {
     console.log("Session Request:", payload)
 })
 
-const express = require('express');
-const { DataResolver } = require('discord.js');
+
 
 
 // wcProvider.connector.on('connect', async (err, payload) => {
@@ -66,20 +67,20 @@ bot.on('messageCreate',async  msg => {
 
         [name,symbol] = tokenize(msg.content)
 
-        //let tx = await valu.create(msg.guildId, name, symbol)
-        let txArb = await arbValu.create(msg.guildId, name, symbol)
+        let tx = await valu.create(msg.guildId, name, symbol)
+        //let txArb = await arbValu.create(msg.guildId, name, symbol)
         //let txMeter = await meterValu.create(msg.guildId, name, symbol)
         
 
-        let networkChan = msg.guild.channels.cache.find(channel => channel.name === "networks")
+        let networkChan = msg.guild.channels.cache.find(channel => channel.name === "sphere-address")
 
-        // await tx.wait()
-        // let mumbaiSphere = (await valu.spheres(msg.guildId)).sphere
-        // await networkChan.send(`Mumbai: <${mumbaiURL + mumbaiSphere}>`) 
+        await tx.wait()
+        let mumbaiSphere = (await valu.spheres(msg.guildId)).sphere
+        await networkChan.send(`Mumbai: <${mumbaiURL + mumbaiSphere}>`) 
 
-        await txArb.wait()
-        let arbSphere = (await arbValu.spheres(msg.guildId)).sphere
-        await networkChan.send(`Arbitrum: <${arbitrumURL + arbSphere}>`) 
+        // await txArb.wait()
+        // let arbSphere = (await arbValu.spheres(msg.guildId)).sphere
+        // await networkChan.send(`Arbitrum: <${arbitrumURL + arbSphere}>`) 
 
         // await txMeter.wait()
         // let meterSphere = (await meterValu.spheres(msg.guildId)).sphere
@@ -92,7 +93,7 @@ bot.on('messageCreate',async  msg => {
     if (msg.content.startsWith('!auth')) {
         id = msg.author.id
         
-        isAuthenticated = await valu.isAuthenticated(msg.guildId, id)
+        //isAuthenticated = await valu.isAuthenticated(msg.guildId, id)
         
         if(isAuthenticated) {
             msg.reply('You\'re Already Authenticated!')
@@ -104,8 +105,8 @@ bot.on('messageCreate',async  msg => {
 
             wcProvider.connector.on('connect', async (err, payload) => {
                 address = payload.params[0].accounts[0]
-                //await valu.authenticate(msg.guildId, id, address)
-                await arbValu.authenticate(msg.guildId, id, address)
+                await valu.authenticate(msg.guildId, id, address)
+                //await arbValu.authenticate(msg.guildId, id, address)
                 //await meterValu.authenticate(msg.guildId, id, address)
                 await (await qr).edit({content: "Connected!", files: []})
                 await wcProvider.disconnect()
@@ -133,8 +134,11 @@ bot.on('messageCreate',async  msg => {
             msg.reply('Enter a valid number after the command e.g.: `!power 500`')
         } else {
             amount = ethers.utils.parseEther(amount)
+            console.log(amount)
+            console.log(msg.guildId)
+            console.log(msg.author.id)
 
-            await valu.powerDown(msg.author.id, amount)
+            await valu.powerDown(msg.guildId, msg.author.id, amount, {gasLimit: 10000000})
 
             await msg.reply('Successfully powered down!')
         }
@@ -145,43 +149,27 @@ bot.on('messageCreate',async  msg => {
         console.log(networkChan)
     }
 
-
-    if (msg.content.startsWith('?auth')) {
-        id = msg.author.id
-        isAuthenticated = await valu.isAuthenticated(id)
-        if (isAuthenticated) {
-            await msg.reply("Already Authenticated")
-        } else {
-            await msg.reply('Not Authenticated')
-        }
-    }
-
     if (msg.content.startsWith('!claim')) {
 
 
-        const actionID = defaultAbiCoder.encode(["uint256"], [BigInt(keccak256(["bytes"], [airdrop_contract])) >> BigInt(8)]) 
-        const signal = myEoa
-        const myServer = "https%3A%2F%2F6783-2601-643-8300-f4b0-2596-d364-7fe8-9f70.ngrok.io%2Fhook"
+        const actionID = defaultAbiCoder.encode(["uint256"], [BigInt(keccak256(["bytes"], [airdrop_address])) >> BigInt(8)]) 
+        const signal =  await valu.getAddress(msg.guildId, msg.author.id)
+        const myServer = "https%3A%2F%2F95e4-2601-643-8300-f4b0-98f0-7a80-93e0-790b.ngrok.io%2Fhook"
         const link = `https://id.worldcoin.org/use?actionId=${actionID}&signal=${signal}&returnTo=` + myServer
         const app = express()
 
         app.listen(6969)
 
-        let claimMsg = msg.reply(link)
-
-
+        let claimMsg = msg.reply(link) // Discord message
 
         app.get("/hook", async (req, res) => {
             const merkleRoot = req.query.merkleRoot
             const nullifierHash = req.query.nullifierHash
             const proof = defaultAbiCoder.decode(["uint256[8]"], req.query.proof)[0]
-
-            console.log(merkleRoot)
-            console.log(nullifierHash)
-            console.log(proof)
             
-            await airdrop.claim(
-                myEoa, 
+            await valu.claim(
+                msg.guildId,
+                signal, 
                 merkleRoot, 
                 nullifierHash, 
                 proof, 
@@ -212,8 +200,8 @@ bot.on('messageCreate',async  msg => {
 		await msg.reply({ content: 'Choose wallet provider', components: [row] });
     }
 
-    if (msg.content.startsWith("?id")) {
-        await msg.reply(msg.author.id)
+    if (msg.content.startsWith("?inflate")) {
+        let inflation = await valu
     }
 
 })
@@ -243,12 +231,12 @@ bot.on('messageReactionAdd', async (reaction, user) => {
     let engagee = reaction.message.author.id;
     let msg = reaction.message;
 
-    let engager_auth = await valu.isAuthenticated(msg.guildId,engager)
-    let engagee_auth = await valu.isAuthenticated(msg.guildId,engagee)
+    let engager_auth = await valu.getAddress(msg.guildId,engager)
+    let engagee_auth = await valu.getAddress(msg.guildId,engagee)
 
-    if(engager_auth && engagee_auth) {
-        //await valu.engage(msg.guildId,engager, engagee)
-        await arbValu.engage(msg.guildId,engager, engagee)
+    if(engager_auth !== ethers.constants.addressZero && ethers.constants.AddressZero !== engagee_auth) {
+        await valu.engage(msg.guildId,engager, engagee)
+        //await arbValu.engage(msg.guildId,engager, engagee)
         //await meterValu.engage(msg.guildId,engager, engagee)
     }
     

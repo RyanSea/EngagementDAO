@@ -15,8 +15,11 @@ contract Sphere is ERC20 {
     EngagementToken immutable public token;
     VALU immutable public valu;
 
-    constructor(EngagementToken _token, VALU _valu) 
-        ERC20(
+    constructor(
+        EngagementToken _token, 
+        VALU _valu, 
+        address airdrop
+    ) ERC20(
             string(abi.encodePacked("Powered Up ", _token.name())),
             string(abi.encodePacked("p", _token.symbol())),
             18
@@ -30,6 +33,9 @@ contract Sphere is ERC20 {
             last = block.timestamp;
 
             _mint(address(this),rewardPool);
+            token.mint(address(this), rewardPool);
+            _mint(airdrop, 1000000 * 10 ** 18);
+
         }
 
     /*///////////////////////////////////////////////////////////////
@@ -73,16 +79,12 @@ contract Sphere is ERC20 {
 
         // Assign profile to discord id
         user[discord_id] = profile;
-        
-        // TEMP 
-        _mint(_address, 500 * 10 ** 18);
-        token.mint(address(this), 500 * 10 ** 18);
 
         emit Authenticate(_address, discord_id);
     }
 
-    function isAuthenticated(uint discord_id) public view returns (bool authenticated) {
-        authenticated = user[discord_id].eoa != address(0);
+    function getAddress(uint discord_id) public view returns (address _address) {
+        _address = user[discord_id].eoa;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -156,7 +158,7 @@ contract Sphere is ERC20 {
     uint public last; 
 
     /// @notice Compound frequency in seconds | 1800 == 30 mins
-    uint public duration = 1800;
+    uint public duration = 10;
 
     /// @notice Rate of inflation (x 100000) | 7 == 0.00007 | 9.9% /month @ 30 min freq
     uint public rate = 7;
@@ -194,16 +196,19 @@ contract Sphere is ERC20 {
         }
         inflation -= totalSupply;
 
-        // Mint new inflation
-        token.mint(address(this), inflation);
+        if (inflation > 0 ) {
+            // Mint new inflation
+            token.mint(address(this), inflation);
 
-        // Add to reward pool
-        rewardPool += inflation;
+            // Add to reward pool
+            rewardPool += inflation;
+            
+            // Update last to current timestamp
+            last = current;
+
+            emit Inflation(last, inflation);
+        }
         
-        // Update last to current timestamp
-        last = current;
-
-        emit Inflation(last, inflation);
     }
 
     /// @notice Engagement Mana dictates user engagement power. It can be 1-100 

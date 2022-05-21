@@ -12,13 +12,5 @@ contract VALU is ERC20 {
     function mint(address to, uint amount) public {
         _mint(to, amount);
     }
-
-    function approvedTransfer(
-        address owner,
-        address spender, 
-        uint amount
-    ) public {
-        _approve(owner, spender, amount);
-        transferFrom(owner, spender, amount);
-    }
+    
 }

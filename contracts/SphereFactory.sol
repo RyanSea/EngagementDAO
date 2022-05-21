@@ -12,9 +12,9 @@ contract SphereFactory {
 
     /// @notice Creates community level protocol
     /// TODO Add Gnosis multisig functionality for spheres
-    function create(uint server_id, EngagementToken _token, VALU valu) public {
+    function create(uint server_id, EngagementToken _token, VALU valu, address airdrop) public {
         // Create Engagement Sphere
-        Sphere _sphere = new Sphere(_token, valu);
+        Sphere _sphere = new Sphere(_token, valu, airdrop);
 
         // Assign Engagement Sphere Profile to Server ID
         spheres[server_id] = address(_sphere);
