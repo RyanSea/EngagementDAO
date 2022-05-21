@@ -5,6 +5,8 @@ const {
     meterValu,
     token, 
     ethers,  
+    airdrop,
+    airdrop_contract,
     wc_engagement, 
     wc_token, 
     wcSigner, 
@@ -20,7 +22,9 @@ const {
 const {createSphere, tokenize} = require('./utils/utils')
 
 var qr = require('qr-image');
-const myEoa = '0x44B269491f4ed800621433cd79bCF62319593C9e'
+const myEoa = '0xf5f0835DE49B6D288a180865014289A35D07c5e5'
+const {defaultAbiCoder} = require('@ethersproject/abi')
+const { keccak256 } =  require("@ethersproject/solidity")
 
 const mumbaiURL = "https://mumbai.polygonscan.com/address/"
 const arbitrumURL = "https://testnet.arbiscan.io/address/"
@@ -38,23 +42,9 @@ wcProvider.connector.on('session_request', async (err, payload) => {
     console.log("Session Request:", payload)
 })
 
-const express = require('express')
-const app = express()
+const express = require('express');
+const { DataResolver } = require('discord.js');
 
-app.listen(80) // change
-
-app.get("/hook", (req, res) => {
-  const merkleRoot = req.query.merkleRoot
-  const nullifierHash = req.query.nullifierHash
-  const proof = req.query.proof
-
-  console.log(merkleRoot)
-  console.log(proof)
-
-  res.send("World ID Verification Success! Return to Discord!")
-
-  res.status(200).end() 
-})
 
 // wcProvider.connector.on('connect', async (err, payload) => {
 //     console.log(payload)
@@ -164,6 +154,44 @@ bot.on('messageCreate',async  msg => {
         } else {
             await msg.reply('Not Authenticated')
         }
+    }
+
+    if (msg.content.startsWith('!claim')) {
+
+
+        const actionID = defaultAbiCoder.encode(["uint256"], [BigInt(keccak256(["bytes"], [airdrop_contract])) >> BigInt(8)]) 
+        const signal = myEoa
+        const myServer = "https%3A%2F%2F6783-2601-643-8300-f4b0-2596-d364-7fe8-9f70.ngrok.io%2Fhook"
+        const link = `https://id.worldcoin.org/use?actionId=${actionID}&signal=${signal}&returnTo=` + myServer
+        const app = express()
+
+        app.listen(6969)
+
+        let claimMsg = msg.reply(link)
+
+
+
+        app.get("/hook", async (req, res) => {
+            const merkleRoot = req.query.merkleRoot
+            const nullifierHash = req.query.nullifierHash
+            const proof = defaultAbiCoder.decode(["uint256[8]"], req.query.proof)[0]
+
+            console.log(merkleRoot)
+            console.log(nullifierHash)
+            console.log(proof)
+            
+            await airdrop.claim(
+                myEoa, 
+                merkleRoot, 
+                nullifierHash, 
+                proof, 
+                {gasLimit: 10000000}
+            )
+            await (await claimMsg).edit("Claim successful!")
+            res.send("World ID Verification Success! Return to Discord!")
+
+            res.status(200).end() 
+        })
     }
 
     if (msg.content.startsWith('!wallet')) {

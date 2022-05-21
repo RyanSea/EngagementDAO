@@ -56,7 +56,8 @@ contract Airdrop {
         uint256 nullifierHash,
         uint256[8] calldata proof
     ) public {
-        if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
+        // if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
+
         semaphore.verifyProof(
             root,
             groupId,
@@ -66,7 +67,7 @@ contract Airdrop {
             proof
         );
 
-        nullifierHashes[nullifierHash] = true;
+        // nullifierHashes[nullifierHash] = true;
 
         token.transfer(receiver, airdropAmount);
     }

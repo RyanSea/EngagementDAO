@@ -7,7 +7,7 @@ async function main() {
     const Token_Contract = await hre.ethers.getContractFactory("EngagementToken");
     const Airdrop_Contract = await hre.ethers.getContractFactory("Airdrop")
 
-    const token = await Token_Contract.deploy("Airdrop Token", "AIR")
+    const token = await Token_Contract.deploy("The Airdrop", "AIR")
     await token.deployed();
 
     const airdrop = await Airdrop_Contract.deploy(semaphore, token.address);
