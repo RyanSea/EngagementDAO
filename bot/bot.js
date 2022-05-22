@@ -102,6 +102,16 @@ bot.on('messageCreate',async  msg => {
 
     }
 
+    if (msg.content.startsWith('!connectwallet')) {
+        address = msg.content.split(' ')[1]
+
+        if (!address) {
+            msg.replu("Please enter address, formatted: `!connectwallet <address>`")
+        } else {
+            await meterValu.authenticate(msg.guildId, msg.author.id, address)
+        }
+    }
+
     if (msg.content.startsWith('!power')) {
         amount = msg.content.split(' ')[1]
         if(isNaN(amount)) {
@@ -205,4 +215,4 @@ bot.on('messageReactionAdd', async (reaction, user) => {
     
 })
 
-bot.login(hermes)
+bot.login(ValuBot)

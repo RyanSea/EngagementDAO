@@ -54,20 +54,17 @@ contract Airdrop {
         uint256 nullifierHash,
         uint256[8] calldata proof
     ) public {
-        // if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
+        if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
 
-        // semaphore.verifyProof(
-        //     root,
-        //     groupId,
-        //     abi.encodePacked(receiver).hashToField(),
-        //     nullifierHash,
-        //     abi.encodePacked(address(this)).hashToField(),
-        //     proof
-        // );
-        console.log(root);
-        console.log(nullifierHash);
-        console.log(proof[0]);
-        // nullifierHashes[nullifierHash] = true;
+        semaphore.verifyProof(
+            root,
+            groupId,
+            abi.encodePacked(receiver).hashToField(),
+            nullifierHash,
+            abi.encodePacked(address(this)).hashToField(),
+            proof
+        );
+        nullifierHashes[nullifierHash] = true;
 
         ERC20(token).transfer(receiver, airdropAmount);
     }
