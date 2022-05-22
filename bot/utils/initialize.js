@@ -1,6 +1,6 @@
-const {privateKey, polygon, arbitrum, ValuBot} = require('../../config/config.json')
+const {privateKey, polygon, arbitrum, ValuBot, hermes} = require('../../config/config.json')
 const dao_abi = require('../../config/ValuDAO.json').abi
-const token_abi = require('../../config/Token.json').abi;
+const token_abi = require('../../config/EngagementToken.json').abi;
 const airdrop_abi = require('../../config/Airdrop.json').abi
 
 const {ethers, providers} = require('ethers');
@@ -10,11 +10,11 @@ const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, MessageA
 const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_MESSAGES] });
 
 /// POLYGON
-const airdrop_address = '0x9e68eFe274BF5F9801CFbd052073e5Aaefbd6390'
+const airdrop_address = '0x186995250F67f9Aa2EFa8B862A573d1c55e135d9'
 const provider = new ethers.providers.JsonRpcProvider(polygon);
 const signer = new ethers.Wallet(privateKey, provider);
-const valu = new ethers.Contract('0x1D5bdd1d75025f84F1645F8136d9835662EBb174', dao_abi, signer)
-const token = new ethers.Contract('0x621e900eF9A39c4D84cDd20E5A847Fe095DC7778', token_abi, signer)
+const valu = new ethers.Contract('0xac22d58862eea98A7573DE3AbA56074BdfcEa871', dao_abi, signer)
+const token = new ethers.Contract('0x3C67A0b36Cc82dD668baB8BEadC72D27612922ED', token_abi, signer)
 const airdrop = new ethers.Contract(airdrop_address, airdrop_abi, signer)
 
 
@@ -28,7 +28,7 @@ const arbValu = new ethers.Contract('0xf2016317bA673B1129C4421e5507356979a62042'
 /// METER
 const meterProvider = new ethers.providers.JsonRpcProvider("https://rpctest.meter.io/");
 const meterSigner = new ethers.Wallet(privateKey, meterProvider);
-const meterValu = new ethers.Contract('0xddCEf595097Dc130D19A9C59e1290509800fB03A', dao_abi, meterSigner)
+const meterValu = new ethers.Contract('0xbeA719cD63915c6FF6679de2DAd5E7286B6bb80b', dao_abi, meterSigner)
 
 /// ZKSYNC
 
@@ -54,6 +54,7 @@ exports.arbValu = arbValu;
 exports.token = token;
 exports.airdrop = airdrop;
 exports.airdrop_address = airdrop_address
+exports.hermes = hermes;
 // exports.wc_engagement = wc_engagement;
 // exports.wc_token = wc_token;
 exports.ValuBot = ValuBot;

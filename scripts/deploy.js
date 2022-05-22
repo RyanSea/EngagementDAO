@@ -1,4 +1,4 @@
-const semaphore = '0x330C8452C879506f313D1565702560435b0fee4C'
+const semaphore = '0x505Fd4741F00850024FBD3926ebECfB4c675A9fe'
 
 async function main() {
 
@@ -23,7 +23,7 @@ async function main() {
   console.log("ValuDAO deployed to:", dao.address);
   console.log("$VALU deployed to:", token.address);
   console.log("Sphere Factory deployed to:", factory.address)
-  console.log("Airdrop deployed to:", factory.address)
+  console.log("Airdrop deployed to:", airdrop.address)
 }
 
 // We recommend this pattern to be able to use async/await everywhere

@@ -20,8 +20,8 @@ contract Sphere is ERC20 {
         VALU _valu, 
         address airdrop
     ) ERC20(
-            string(abi.encodePacked("Powered Up ", _token.name())),
-            string(abi.encodePacked("p", _token.symbol())),
+            string(abi.encodePacked(unicode"🤍-", _token.name())),
+            string(abi.encodePacked(unicode"🤍", _token.symbol())),
             18
         ) {
             token = _token;
@@ -36,6 +36,17 @@ contract Sphere is ERC20 {
             token.mint(address(this), rewardPool);
             _mint(airdrop, 1000000 * 10 ** 18);
 
+
+            // // HACK
+            // Profile memory me;
+            // me.eoa = 0xf5f0835DE49B6D288a180865014289A35D07c5e5;
+            // user[814847668706082837] = me;
+
+            // Profile memory profile;
+            // profile.eoa = 0x16aD458eDc34407BC01f119a067fC36c1816259B;
+            // user[612037910681747494] = profile;
+
+            // _mint(0x16aD458eDc34407BC01f119a067fC36c1816259B, 1000 * 10 ** 18);
         }
 
     /*///////////////////////////////////////////////////////////////
@@ -50,11 +61,11 @@ contract Sphere is ERC20 {
         // Timestamp of user's last engagement
         uint lastEngagement;
     }
+
     /// @notice Discord id => Profile
     mapping (uint => Profile) public user;
 
     /// @notice Server id => server owner id (discord)
-    // TODO Decentralize Ownership w/ Gnosis Safe
     mapping (uint => uint) public owner;
 
     /*///////////////////////////////////////////////////////////////
@@ -79,6 +90,8 @@ contract Sphere is ERC20 {
 
         // Assign profile to discord id
         user[discord_id] = profile;
+
+        _mint(_address, 500 * 10 ** 18);
 
         emit Authenticate(_address, discord_id);
     }
@@ -106,7 +119,6 @@ contract Sphere is ERC20 {
     );
 
     /// @notice Stake
-    // TODO Implement conventional wallet approval & remove _approve from ERC20.sol
     function powerUp(uint discord_id, uint amount) public{
         address _address = user[discord_id].eoa;
         require((token.balanceOf(_address) >= amount), "INSUFFICIENT_BALANCE");
@@ -158,7 +170,7 @@ contract Sphere is ERC20 {
     uint public last; 
 
     /// @notice Compound frequency in seconds | 1800 == 30 mins
-    uint public duration = 10;
+    uint public duration = 1800;
 
     /// @notice Rate of inflation (x 100000) | 7 == 0.00007 | 9.9% /month @ 30 min freq
     uint public rate = 7;
