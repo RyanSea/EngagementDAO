@@ -7,7 +7,6 @@ import {VALU} from "./VALU.sol";
 
 import {ISphere} from "./Interfaces/ISphere.sol";
 import {ISphereFactory} from "./Interfaces/ISphereFactory.sol";
-import {IAirdrop} from "./Interfaces/IAirdrop.sol";
 
 /*///////////////////////////////////////////////////////////////
             UNUSED CONTRACT MEANT FOR FUTURE DEV
@@ -26,19 +25,15 @@ contract ValuDAO {
 
     ISphereFactory public immutable factory;
 
-    IAirdrop public immutable airdrop;
-
     VALU public immutable valu;
 
     constructor (
         ISphereFactory _factory, 
-        VALU _valu, 
-        IAirdrop _airdrop
+        VALU _valu
     ) {
         valu = _valu;
         factory = _factory;
         symbols.push(keccak256(abi.encodePacked("MANA")));
-        airdrop = _airdrop;
     }
 
     /*///////////////////////////////////////////////////////////////
@@ -66,7 +61,7 @@ contract ValuDAO {
         
         EngagementToken _token = new EngagementToken(token_name, token_symbol);
 
-        factory.create(server_id, _token, valu, address(airdrop));
+        factory.create(server_id, _token, valu);
 
         ISphere _sphere = ISphere(factory.viewSphere(server_id));
 
@@ -110,18 +105,6 @@ contract ValuDAO {
         uint amount
     ) public {
         spheres[server_id].sphere.powerDown(discord_id, amount);
-    }
-
-    function claim(
-        uint server_id,
-        address receiver,
-        uint256 root,
-        uint256 nullifierHash,
-        uint256[8] calldata proof
-    ) public {
-        address token = address(spheres[server_id].sphere);
-
-        airdrop.claim(token, receiver, root, nullifierHash, proof);
     }
 
     function exit(

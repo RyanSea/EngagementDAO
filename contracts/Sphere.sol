@@ -17,8 +17,7 @@ contract Sphere is ERC20 {
 
     constructor(
         EngagementToken _token, 
-        VALU _valu, 
-        address airdrop
+        VALU _valu
     ) ERC20(
             string(abi.encodePacked(unicode"🤍-", _token.name())),
             string(abi.encodePacked(unicode"🤍", _token.symbol())),
@@ -34,19 +33,6 @@ contract Sphere is ERC20 {
 
             _mint(address(this),rewardPool);
             token.mint(address(this), rewardPool);
-            _mint(airdrop, 1000000 * 10 ** 18);
-
-
-            // // HACK
-            // Profile memory me;
-            // me.eoa = 0xf5f0835DE49B6D288a180865014289A35D07c5e5;
-            // user[814847668706082837] = me;
-
-            // Profile memory profile;
-            // profile.eoa = 0x16aD458eDc34407BC01f119a067fC36c1816259B;
-            // user[612037910681747494] = profile;
-
-            // _mint(0x16aD458eDc34407BC01f119a067fC36c1816259B, 1000 * 10 ** 18);
         }
 
     /*///////////////////////////////////////////////////////////////

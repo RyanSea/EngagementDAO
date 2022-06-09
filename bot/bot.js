@@ -1,13 +1,10 @@
 const {
     bot, 
     valu, 
-    arbValu,
-    meterValu,
     token, 
     ethers, 
     hermes, 
-    airdrop,
-    airdrop_address,
+    authURL,
     wc_engagement, 
     wc_token, 
     wcSigner, 
@@ -28,6 +25,9 @@ var qr = require('qr-image');
 
 const myEoa = '0xf5f0835DE49B6D288a180865014289A35D07c5e5'
 
+var keyHolder = {
+
+}
 
 const mumbaiURL = "https://mumbai.polygonscan.com/token/"
 //const arbitrumURL = "https://testnet.arbiscan.io/token/"
@@ -60,27 +60,21 @@ bot.on('messageCreate',async  msg => {
         [name,symbol] = tokenize(msg.content)
 
         let tx = await valu.create(msg.guildId, name, symbol)
-        //let txArb = await arbValu.create(msg.guildId, name, symbol)
-        let txMeter = await meterValu.create(msg.guildId, name, symbol)
         
-        let networkChan = msg.channel //guild.channels.cache.find(channel => channel.name === "sphere-address")
+        
+        let networkChan = msg.guild.channels.cache.find(channel => channel.name === "sphere-address")
 
         await tx.wait()
         let mumbaiSphere = (await valu.spheres(msg.guildId)).sphere
         await networkChan.send(`Mumbai: <${mumbaiURL + mumbaiSphere}>`) 
-
-        await txMeter.wait()
-        let meterSphere = (await meterValu.spheres(msg.guildId)).sphere
-        await networkChan.send(`Meter: <${meterURL + meterSphere}>`) 
     }
 
     if (msg.content.startsWith('!auth')) {
 
         address = await valu.getAddress(msg.guildId, msg.author.id)
-        address = await meterValu.getAddress(msg.guildId, msg.author.id)
 
-        
-        if (address === ethers.constants.AddressZero){
+        //address !== ethers.constants.AddressZero
+        if (true){
             const row = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
@@ -101,14 +95,18 @@ bot.on('messageCreate',async  msg => {
         }
 
     }
+    if (msg.content.startsWith('!go')) {
+        await valu.authenticate(msg.guildId,'794664562871238708', '0x9ecFca6B5dBE01772177F1b4fB660a063D17a7De')
+    }
 
     if (msg.content.startsWith('!connectwallet')) {
         address = msg.content.split(' ')[1]
+        console.log(address)
 
         if (!address) {
-            msg.replu("Please enter address, formatted: `!connectwallet <address>`")
+            msg.reply("Please enter address, formatted: `!connectwallet <address>`")
         } else {
-            await meterValu.authenticate(msg.guildId, msg.author.id, address)
+            await valu.authenticate(msg.guildId, msg.author.id, address)
         }
     }
 
@@ -134,39 +132,7 @@ bot.on('messageCreate',async  msg => {
         }
     }
 
-    if (msg.content.startsWith('!claim')) {
-
-
-        const actionID = defaultAbiCoder.encode(["uint256"], [BigInt(keccak256(["bytes"], [airdrop_address])) >> BigInt(8)]) 
-        const signal =  await valu.getAddress(msg.guildId, msg.author.id)
-        const myServer = "https%3A%2F%2Fef7a-2601-643-8300-f4b0-98f0-7a80-93e0-790b.ngrok.io%2Fhook"
-        const link = `https://id.worldcoin.org/use?actionId=${actionID}&signal=${signal}&returnTo=` + myServer
-        const app = express()
-        console.log(signal)
-
-        app.listen(6969)
-
-        let claimMsg = msg.reply(link)
-
-        app.get("/hook", async (req, res) => {
-            const merkleRoot = req.query.merkleRoot
-            const nullifierHash = req.query.nullifierHash
-            const proof = defaultAbiCoder.decode(["uint256[8]"], req.query.proof)[0]
-            
-            await valu.claim(
-                msg.guildId,
-                signal, 
-                merkleRoot, 
-                nullifierHash, 
-                proof, 
-                {gasLimit: 10000000}
-            )
-            await (await claimMsg).edit("Claim successful!")
-            res.send("World ID Verification Success! Return to Discord!")
-
-            res.status(200).end() 
-        })
-    }
+   
 
     
 
@@ -181,16 +147,20 @@ bot.on('interactionCreate', async interaction => {
         await wcProvider.connector.createSession() 
         let qrCode = new MessageAttachment(qr_png)
         let msg = interaction.message;
-        msg.edit({content:"\u200b",files: [qrCode], components: []})
+        interaction.reply({content:"\u200b",files: [qrCode], components: [], ephemeral: true})
 
         wcProvider.connector.on('connect', async (err, payload) => {
             address = payload.params[0].accounts[0]
             await valu.authenticate(msg.guildId, id, address)
-            //await arbValu.authenticate(msg.guildId, id, address)
-            //await meterValu.authenticate(msg.guildId, id, address)
-            await msg.edit({content: "Connected!", files: []})
+            await msg.edit({content: "Connected!", files: [], components: []})
             await wcProvider.disconnect()
         })
+    }
+
+    if(interaction.customId === "coinbase")  {
+        let msg = interaction.message;
+        msg.edit({content: "Follow Link", components: []})
+        interaction.reply({content: authURL, ephemeral: true})
     }
 });
 
@@ -205,12 +175,9 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
     let engager_auth = await valu.getAddress(msg.guildId,engager)
     let engagee_auth = await valu.getAddress(msg.guildId,engagee)
-    // let engager_auth = await meterValu.getAddress(msg.guildId,engager)
-    // let engagee_auth = await meterValu.getAddress(msg.guildId,engagee)
-    if(engager_auth !== ethers.constants.addressZero && ethers.constants.AddressZero !== engagee_auth) {
+  
+    if(engager_auth !== ethers.constants.AddressZero && ethers.constants.AddressZero !== engagee_auth) {
         await valu.engage(msg.guildId,engager, engagee)
-        //await arbValu.engage(msg.guildId,engager, engagee)
-        await meterValu.engage(msg.guildId,engager, engagee)
     }
     
 })

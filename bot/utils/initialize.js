@@ -2,6 +2,8 @@ const {privateKey, polygon, arbitrum, ValuBot, hermes} = require('../../config/c
 const dao_abi = require('../../config/ValuDAO.json').abi
 const token_abi = require('../../config/EngagementToken.json').abi;
 const airdrop_abi = require('../../config/Airdrop.json').abi
+const { DefenderRelayProvider, DefenderRelaySigner } = require('defender-relay-client/lib/ethers');
+const credentials = require('../../config/relay.json')
 
 const {ethers, providers} = require('ethers');
 const WalletConnectProvider = require("@walletconnect/web3-provider");
@@ -9,28 +11,21 @@ const WalletConnectProvider = require("@walletconnect/web3-provider");
 const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, MessageAttachment} =  require('discord.js');
 const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.DIRECT_MESSAGES, Intents.FLAGS.GUILD_MESSAGES] });
 
-/// POLYGON
-const airdrop_address = '0x186995250F67f9Aa2EFa8B862A573d1c55e135d9'
-const provider = new ethers.providers.JsonRpcProvider(polygon);
-const signer = new ethers.Wallet(privateKey, provider);
-const valu = new ethers.Contract('0xac22d58862eea98A7573DE3AbA56074BdfcEa871', dao_abi, signer)
+const authURL = "https://discord.com/api/oauth2/authorize?client_id=975536229854638141&redirect_uri=https%3A%2F%2Fmaster.d34tkfwwvb4ywd.amplifyapp.com%2F&response_type=token&scope=identify"
+
+/// CONTRACT INITIALIZATION
+const airdrop_address = '0x36Fc97819634Dd930328BDe78f7785069f8bBc8c'
+
+// const provider = new ethers.providers.JsonRpcProvider(polygon);
+// const signer = new ethers.Wallet(privateKey, provider);
+
+const provider = new DefenderRelayProvider(credentials);
+const signer = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
+
+
+const valu = new ethers.Contract('0xFFCa18467Be207898F992Fc9be5197DB2f6bC286', dao_abi, signer)
 const token = new ethers.Contract('0x3C67A0b36Cc82dD668baB8BEadC72D27612922ED', token_abi, signer)
-const airdrop = new ethers.Contract(airdrop_address, airdrop_abi, signer)
 
-
-/// ARBITRUM
-const arbProvider = new ethers.providers.JsonRpcProvider(arbitrum);
-const arbSigner = new ethers.Wallet(privateKey, arbProvider);
-const arbValu = new ethers.Contract('0xf2016317bA673B1129C4421e5507356979a62042', dao_abi, arbSigner)
-
-/// NERVOS
-
-/// METER
-const meterProvider = new ethers.providers.JsonRpcProvider("https://rpctest.meter.io/");
-const meterSigner = new ethers.Wallet(privateKey, meterProvider);
-const meterValu = new ethers.Contract('0xbeA719cD63915c6FF6679de2DAd5E7286B6bb80b', dao_abi, meterSigner)
-
-/// ZKSYNC
 
 
 
@@ -49,10 +44,7 @@ const wcSigner = new ethers.providers.Web3Provider(wcProvider);
 
 exports.bot = bot;
 exports.valu = valu
-exports.meterValu = meterValu;
-exports.arbValu = arbValu;
 exports.token = token;
-exports.airdrop = airdrop;
 exports.airdrop_address = airdrop_address
 exports.hermes = hermes;
 // exports.wc_engagement = wc_engagement;
@@ -63,6 +55,7 @@ exports.wcSigner = wcSigner;
 exports.ethers = ethers;
 exports.wcProvider = wcProvider
 //exports.abi = engagement_abi;
+exports.authURL = authURL
 exports.MessageActionRow = MessageActionRow 
 exports.MessageButton = MessageButton
 exports.MessageAttachment = MessageAttachment;
