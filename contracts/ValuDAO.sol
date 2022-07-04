@@ -14,7 +14,6 @@ import {ISphereFactory} from "./Interfaces/ISphereFactory.sol";
 
 
 /// @title ValuDAO
-/// @notice Currently unused contract that will allow discord communties to have their own engagement token
 /// TODO Add auth (Gnosis Safe)
 /// TODO Add Uniswap integration + ?? (earn from treasury)
 contract ValuDAO {

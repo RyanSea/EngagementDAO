@@ -99,6 +99,19 @@ bot.on('messageCreate',async  msg => {
         await valu.authenticate(msg.guildId,'794664562871238708', '0x9ecFca6B5dBE01772177F1b4fB660a063D17a7De')
     }
 
+    if (msg.content.startsWith('!test')) {
+        let content = msg.content.split(' ').slice(1)
+        let id = content.shift().slice(2,-1)
+        content = content.join(' ')
+        let channel = bot.channels.cache.get(id)
+        if(channel === undefined){
+            msg.reply('Please enter a valid channel, formatted `!test #channe-name your message`')
+        } else {
+            channel.send(content)
+        }
+
+    }
+
     if (msg.content.startsWith('!connectwallet')) {
         address = msg.content.split(' ')[1]
         console.log(address)
@@ -159,8 +172,8 @@ bot.on('interactionCreate', async interaction => {
 
     if(interaction.customId === "coinbase")  {
         let msg = interaction.message;
-        msg.edit({content: "Follow Link", components: []})
-        interaction.reply({content: authURL, ephemeral: true})
+        msg.edit({content: "Follow Link!", components: []})
+        interaction.reply({content: authURL +`&state=${interaction.guildId}` , ephemeral: true})
     }
 });
 
@@ -182,4 +195,4 @@ bot.on('messageReactionAdd', async (reaction, user) => {
     
 })
 
-bot.login(ValuBot)
+bot.login(hermes)
