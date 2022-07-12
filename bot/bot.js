@@ -52,7 +52,7 @@ bot.on('ready', async () => {
 })
 
 
-bot.on('messageCreate',async  msg => {
+bot.on('messageCreate', async  msg => {
     let address, isAuthenticated, id, bal, profile, amount, name, symbol;
 
     if (msg.content.startsWith('!create')) {
@@ -99,17 +99,18 @@ bot.on('messageCreate',async  msg => {
         await valu.authenticate(msg.guildId,'794664562871238708', '0x9ecFca6B5dBE01772177F1b4fB660a063D17a7De')
     }
 
-    if (msg.content.startsWith('!test')) {
+    if (msg.content.startsWith('!announce')) {
         let content = msg.content.split(' ').slice(1)
         let id = content.shift().slice(2,-1)
         content = content.join(' ')
+
         let channel = bot.channels.cache.get(id)
+
         if(channel === undefined){
-            msg.reply('Please enter a valid channel, formatted `!test #channe-name your message`')
+            msg.reply('Please enter a valid channel, formatted `!announce #channel-name your message`')
         } else {
             channel.send(content)
         }
-
     }
 
     if (msg.content.startsWith('!connectwallet')) {

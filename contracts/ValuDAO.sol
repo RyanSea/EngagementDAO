@@ -15,7 +15,6 @@ import {ISphereFactory} from "./Interfaces/ISphereFactory.sol";
 
 /// @title ValuDAO
 /// TODO Add auth (Gnosis Safe)
-/// TODO Add Uniswap integration + ?? (earn from treasury)
 contract ValuDAO {
 
     /*///////////////////////////////////////////////////////////////
@@ -135,7 +134,7 @@ contract ValuDAO {
         // DAO token
         EngagementToken token;
         // Multi-sig 
-        address council; // Unused 🥲
+        address council; // Unused 
         // Engagement Sphere
         ISphere sphere;
     }

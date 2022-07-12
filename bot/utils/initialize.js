@@ -13,15 +13,13 @@ const bot = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MES
 
 const authURL = "https://discord.com/api/oauth2/authorize?client_id=975536229854638141&redirect_uri=https%3A%2F%2Fmaster.d34tkfwwvb4ywd.amplifyapp.com%2F&response_type=token&scope=identify"
 
-/// CONTRACT INITIALIZATION
-const airdrop_address = '0x36Fc97819634Dd930328BDe78f7785069f8bBc8c'
+
 
 // const provider = new ethers.providers.JsonRpcProvider(polygon);
 // const signer = new ethers.Wallet(privateKey, provider);
 
 const provider = new DefenderRelayProvider(credentials);
 const signer = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
-
 
 const valu = new ethers.Contract('0xFFCa18467Be207898F992Fc9be5197DB2f6bC286', dao_abi, signer)
 const token = new ethers.Contract('0x3C67A0b36Cc82dD668baB8BEadC72D27612922ED', token_abi, signer)
